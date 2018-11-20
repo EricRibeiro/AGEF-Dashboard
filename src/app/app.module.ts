@@ -8,6 +8,11 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { SocketIoModule } from 'ng-socket-io';
 import { SOCKET_IO_CONFIG } from '../config/socket.io.config';
+import { VendaService } from '../services/domain/venda.service';
+import { DatePipe } from '@angular/common';
+import { BrMaskerIonicServices3 } from 'brmasker-ionic-3';
+import { UtilsService } from '../services/utils/utils.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -16,6 +21,7 @@ import { SOCKET_IO_CONFIG } from '../config/socket.io.config';
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     IonicModule.forRoot(MyApp),
     SocketIoModule.forRoot(SOCKET_IO_CONFIG)
   ],
@@ -25,9 +31,13 @@ import { SOCKET_IO_CONFIG } from '../config/socket.io.config';
     HomePage
   ],
   providers: [
-    StatusBar,
+    { provide: ErrorHandler, useClass: IonicErrorHandler },
+    BrMaskerIonicServices3,
+    DatePipe,
     SplashScreen,
-    { provide: ErrorHandler, useClass: IonicErrorHandler }
+    StatusBar,
+    UtilsService,
+    VendaService
   ]
 })
 export class AppModule { }

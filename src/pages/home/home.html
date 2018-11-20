@@ -19,19 +19,19 @@
     <ion-row text-center>
       <ion-col margin>
         <p class="valor-movimentado-text">Valor Movimentado:</p>
-        <h6>R$5000,00</h6>
+        <h6>R${{mascararDinheiro(valorMovimentado)}}</h6>
       </ion-col>
     </ion-row>
 
     <ion-row margin text-center>
       <ion-col>
         <ion-icon name="shirt"></ion-icon>
-        <h5 class="quantidade-pecas-vendas">10</h5>
+        <h5 class="quantidade-pecas-vendas">{{qtdTotalPecasVendidas}}</h5>
       </ion-col>
 
       <ion-col>
         <ion-icon name="basket"></ion-icon>
-        <h5 class="quantidade-pecas-vendas">20</h5>
+        <h5 class="quantidade-pecas-vendas">{{qtdTotalVendas}}</h5>
       </ion-col>
     </ion-row>
 
