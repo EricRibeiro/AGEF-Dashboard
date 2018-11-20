@@ -1,3 +1,18 @@
 page-home {
-
+    ion-card-header {
+        font-weight: bold;
+    }
+    ion-icon {
+        color: map-get($colors, primary);
+        font-size: 40px;
+    }
+    .scroll-content {
+        background-color: map-get($colors, light);
+    }
+    .quantidade-pecas-vendas {
+        font-weight: bold;
+    }
+    .valor-movimentado-text {
+        color: map-get($colors, primary);
+    }
 }

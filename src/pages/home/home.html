@@ -1,14 +1,40 @@
 <ion-header>
   <ion-navbar>
     <ion-title>
-      Ionic Blank
+      Dashboard
     </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <h5 margin text-center>Vendas por Loja</h5>
+        <canvas #canvasPizza></canvas>
+      </ion-col>
+    </ion-row>
+
+    <ion-row text-center>
+      <ion-col margin>
+        <p class="valor-movimentado-text">Valor Movimentado:</p>
+        <h6>R$5000,00</h6>
+      </ion-col>
+    </ion-row>
+
+    <ion-row margin text-center>
+      <ion-col>
+        <ion-icon name="shirt"></ion-icon>
+        <h5 class="quantidade-pecas-vendas">10</h5>
+      </ion-col>
+
+      <ion-col>
+        <ion-icon name="basket"></ion-icon>
+        <h5 class="quantidade-pecas-vendas">20</h5>
+      </ion-col>
+    </ion-row>
+
+  </ion-grid>
+
 </ion-content>
