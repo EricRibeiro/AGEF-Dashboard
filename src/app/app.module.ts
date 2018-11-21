@@ -12,8 +12,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { MyApp } from './app.component';
 import { SOCKET_IO_CONFIG } from '../config/socket.io.config';
 import { SocketIoModule } from 'ng-socket-io';
-import { UtilsService } from '../services/utils/utils.service';
+import { MoneyService } from '../services/utils/money.service';
 import { VendaService } from '../services/domain/venda.service';
+import { DialogService } from '../services/utils/dialog.service';
 
 @NgModule({
   declarations: [
@@ -36,9 +37,10 @@ import { VendaService } from '../services/domain/venda.service';
     { provide: ErrorHandler, useClass: IonicErrorHandler },
     BrMaskerIonicServices3,
     DatePipe,
+    DialogService,
+    MoneyService,
     SplashScreen,
     StatusBar,
-    UtilsService,
     VendaService
   ]
 })

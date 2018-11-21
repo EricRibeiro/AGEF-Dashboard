@@ -5,10 +5,11 @@ import { NavController } from 'ionic-angular';
 import { Observable } from 'rxjs/Observable';
 import { Socket } from 'ng-socket-io';
 import { Storage } from '@ionic/storage';
-import { UtilsService } from '../../services/utils/utils.service';
+import { MoneyService } from '../../services/utils/money.service';
 import { VendaDTO } from '../../models/venda.dto';
 import { VendaService } from '../../services/domain/venda.service';
 import * as palette from 'google-palette';
+import { DialogService } from '../../services/utils/dialog.service';
 
 @Component({
   selector: 'page-home',
@@ -27,10 +28,11 @@ export class HomePage {
 
   constructor(
     public datePipe: DatePipe,
+    public dialogoService: DialogService,
     public navCtrl: NavController,
+    public moneyService: MoneyService,
     public socket: Socket,
     public storage: Storage,
-    public utilsService: UtilsService,
     public vendaService: VendaService) {
 
     this.socket.connect();
@@ -53,7 +55,7 @@ export class HomePage {
     });
 
     this.escutarClientes().subscribe(message => {
-      this.onConexaoClienteAtualizarDados(message);
+      this.onConexaoClienteAtualizarDados(message.url, message.nickname);
     });
 
     this.escutarVendas().subscribe(message => {
@@ -65,12 +67,24 @@ export class HomePage {
     this.socket.disconnect();
   }
 
-  private atualizarDados(nomeLoja: string, qtdPecasVendidas: number, qtdVendas: number, valorMovimentado: number) {
-    nomeLoja = nomeLoja.substr(nomeLoja.indexOf("-") + 1);
-    nomeLoja = nomeLoja.charAt(0).toUpperCase() + nomeLoja.slice(1);
+  private atualizarDadosEstorno(nomeLoja: string, qtdPecasEstornadas: number, qtdEstornos: number, valorMovimentado: number): void {
+    nomeLoja = this.formatarNomeLoja(nomeLoja);
 
-    this.qtdTotalVendas += qtdVendas;
+    this.qtdTotalPecasVendidas -= qtdPecasEstornadas;
+    this.qtdTotalVendas -= qtdEstornos;
+    this.valorTotalMovimentado -= valorMovimentado;
+
+    let indiceLoja = this.lojas.indexOf(nomeLoja);
+    this.qtdVendasPorLoja[indiceLoja] -= 1;
+
+    this.exibirGrafico(this.lojas, this.qtdVendasPorLoja);
+  }
+
+  private atualizarDadosVenda(nomeLoja: string, qtdPecasVendidas: number, qtdVendas: number, valorMovimentado: number): void {
+    nomeLoja = this.formatarNomeLoja(nomeLoja);
+
     this.qtdTotalPecasVendidas += qtdPecasVendidas;
+    this.qtdTotalVendas += qtdVendas;
     this.valorTotalMovimentado += valorMovimentado;
 
     if (this.lojas.includes(nomeLoja)) {
@@ -86,46 +100,52 @@ export class HomePage {
     this.exibirGrafico(this.lojas, this.qtdVendasPorLoja);
   }
 
-  private onConexaoClienteAtualizarDados(message: any): void {
-    let baseUrl = message.url;
-    let loja = message.nickname;
+  private formatarNomeLoja(nomeLoja: string): string {
+    nomeLoja = nomeLoja.substr(nomeLoja.indexOf("-") + 1);
+    nomeLoja = nomeLoja.charAt(0).toUpperCase() + nomeLoja.slice(1);
+
+    return nomeLoja;
+  }
+
+  private onConexaoClienteAtualizarDados(baseUrl: string, nomeLoja: string): void {
     let hoje = new Date();
     let hojeStr = this.datePipe.transform(hoje, 'dd/MM/yyyy');
+    let nomeLojaFrmtd = this.formatarNomeLoja(nomeLoja);
 
-    this.storage.set(loja, baseUrl);
-    this.resetarDados();
+    this.dialogoService.exibirToast(`${nomeLojaFrmtd} se conectou.`)
 
-    this.storage.forEach((value, key) => {
-      this.recuperarDadosLojas(value, key, hojeStr, hojeStr);
+    this.storage.set(nomeLoja, baseUrl).then(() => {
+      this.resetarDados();
+
+      this.storage.forEach((value, key) => {
+        this.recuperarDadosLojas(value, key, hojeStr, hojeStr);
+      });
     });
   }
 
   private onConexaoVendaAtualizarDados(message: any): void {
     let nomeLoja = message.nickname;
     let operacao = message.venda.operacao;
-    let qtdPecasVendidas = message.venda.venda.quantidade;
-    let qtdVendas = 1;
+    let qtdPecasMovimentadas = message.venda.venda.quantidade;
+    let qtdOperacoes = 1;
     let valorMovimentado = message.venda.venda.preco * message.venda.venda.quantidade;
 
-    // TODO-Eric implementar correção do bug descrito com a equipe
+    // verificando se a loja está salva no storage.
     this.storage.get(nomeLoja).then(data => {
       if (data) {
-        alert("exists");
+        if (operacao === "venda") {
+          this.atualizarDadosVenda(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
+
+        } else if (operacao === "estorno") {
+          this.atualizarDadosEstorno(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
+
+        }
+
+      } else {
+        // TODO-Eric implementar tratamento quando storage estiver vazio mas o cliente estiver conectado.
+
       }
-      else { }
     })
-
-    if (operacao === "venda") {
-      this.atualizarDados(nomeLoja, qtdPecasVendidas, qtdVendas, valorMovimentado);
-
-    } else if (operacao === "estorno") {
-      this.qtdTotalPecasVendidas -= message.venda.venda.quantidade;
-      this.qtdTotalVendas--;
-      this.valorTotalMovimentado -= (message.venda.venda.preco * message.venda.venda.quantidade);
-
-      let indiceLoja = this.lojas.indexOf(nomeLoja);
-      this.qtdVendasPorLoja[indiceLoja] -= 1;
-    }
   }
 
   private calcQtdTotalPecasVendidas(vendas: VendaDTO[]): number {
@@ -193,7 +213,7 @@ export class HomePage {
         let qtdPecasVendidas = this.calcQtdTotalPecasVendidas(vendas);
         let valorMovimentado = this.calcValorTotalVendas(vendas);
 
-        this.atualizarDados(nomeLoja, qtdPecasVendidas, qtdVendas, valorMovimentado);
+        this.atualizarDadosVenda(nomeLoja, qtdPecasVendidas, qtdVendas, valorMovimentado);
       });
   }
 
@@ -206,6 +226,6 @@ export class HomePage {
   }
 
   public mascararDinheiro(valor: number): string {
-    return this.utilsService.mascaraDinheiro(valor);
+    return this.moneyService.mascaraDinheiro(valor);
   }
 }
