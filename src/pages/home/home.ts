@@ -39,9 +39,6 @@ export class HomePage {
 
   }
 
-  ionViewDidLoad() {
-  }
-
   ionViewWillEnter() {
     this.storage.length().then(tamStorage => {
       if (tamStorage > 0) {
@@ -107,47 +104,6 @@ export class HomePage {
     return nomeLoja;
   }
 
-  private onConexaoClienteAtualizarDados(baseUrl: string, nomeLoja: string): void {
-    let hoje = new Date();
-    let hojeStr = this.datePipe.transform(hoje, 'dd/MM/yyyy');
-    let nomeLojaFrmtd = this.formatarNomeLoja(nomeLoja);
-
-    this.dialogoService.exibirToast(`${nomeLojaFrmtd} se conectou.`)
-
-    this.storage.set(nomeLoja, baseUrl).then(() => {
-      this.resetarDados();
-
-      this.storage.forEach((value, key) => {
-        this.recuperarDadosLojas(value, key, hojeStr, hojeStr);
-      });
-    });
-  }
-
-  private onConexaoVendaAtualizarDados(message: any): void {
-    let baseUrl = message.venda.baseUrl;
-    let nomeLoja = message.nickname;
-    let operacao = message.venda.operacao;
-    let qtdPecasMovimentadas = message.venda.venda.quantidade;
-    let qtdOperacoes = 1;
-    let valorMovimentado = message.venda.venda.preco * message.venda.venda.quantidade;
-
-    // Verificando se a loja está conectada mas não está no storage.
-    this.storage.get(nomeLoja).then(data => {
-      if (data) {
-        if (operacao === "venda") {
-          this.atualizarDadosVenda(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
-
-        } else if (operacao === "estorno") {
-          this.atualizarDadosEstorno(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
-        }
-
-      } else {
-        this.onConexaoClienteAtualizarDados(baseUrl, nomeLoja);
-
-      }
-    })
-  }
-
   private calcQtdTotalPecasVendidas(vendas: VendaDTO[]): number {
     return vendas.reduce(function (acc, venda) {
       return acc + venda.quantidade;
@@ -203,6 +159,47 @@ export class HomePage {
     }
 
     this.graficoPizza.update();
+  }
+
+  private onConexaoClienteAtualizarDados(baseUrl: string, nomeLoja: string): void {
+    let hoje = new Date();
+    let hojeStr = this.datePipe.transform(hoje, 'dd/MM/yyyy');
+    let nomeLojaFrmtd = this.formatarNomeLoja(nomeLoja);
+
+    this.dialogoService.exibirToast(`${nomeLojaFrmtd} se conectou.`)
+
+    this.storage.set(nomeLoja, baseUrl).then(() => {
+      this.resetarDados();
+
+      this.storage.forEach((value, key) => {
+        this.recuperarDadosLojas(value, key, hojeStr, hojeStr);
+      });
+    });
+  }
+
+  private onConexaoVendaAtualizarDados(message: any): void {
+    let baseUrl = message.venda.baseUrl;
+    let nomeLoja = message.nickname;
+    let operacao = message.venda.operacao;
+    let qtdPecasMovimentadas = message.venda.venda.quantidade;
+    let qtdOperacoes = 1;
+    let valorMovimentado = message.venda.venda.preco * message.venda.venda.quantidade;
+
+    // Verificando se a loja está conectada mas não está no storage.
+    this.storage.get(nomeLoja).then(data => {
+      if (data) {
+        if (operacao === "venda") {
+          this.atualizarDadosVenda(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
+
+        } else if (operacao === "estorno") {
+          this.atualizarDadosEstorno(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
+        }
+
+      } else {
+        this.onConexaoClienteAtualizarDados(baseUrl, nomeLoja);
+
+      }
+    })
   }
 
   private recuperarDadosLojas(baseUrl: string, nomeLoja: string, dataInicial: string, dataFinal: string) {
