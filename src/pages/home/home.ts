@@ -124,13 +124,14 @@ export class HomePage {
   }
 
   private onConexaoVendaAtualizarDados(message: any): void {
+    let baseUrl = message.venda.baseUrl;
     let nomeLoja = message.nickname;
     let operacao = message.venda.operacao;
     let qtdPecasMovimentadas = message.venda.venda.quantidade;
     let qtdOperacoes = 1;
     let valorMovimentado = message.venda.venda.preco * message.venda.venda.quantidade;
 
-    // verificando se a loja está salva no storage.
+    // Verificando se a loja está conectada mas não está no storage.
     this.storage.get(nomeLoja).then(data => {
       if (data) {
         if (operacao === "venda") {
@@ -138,11 +139,10 @@ export class HomePage {
 
         } else if (operacao === "estorno") {
           this.atualizarDadosEstorno(nomeLoja, qtdPecasMovimentadas, qtdOperacoes, valorMovimentado);
-
         }
 
       } else {
-        // TODO-Eric implementar tratamento quando storage estiver vazio mas o cliente estiver conectado.
+        this.onConexaoClienteAtualizarDados(baseUrl, nomeLoja);
 
       }
     })
