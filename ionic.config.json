@@ -1,5 +1,7 @@
 {
   "name": "AGEF-Dashboard",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "ionic-angular"
 }

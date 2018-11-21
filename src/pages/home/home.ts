@@ -80,9 +80,9 @@ export class HomePage {
   private atualizarDadosVenda(nomeLoja: string, qtdPecasVendidas: number, qtdVendas: number, valorMovimentado: number): void {
     nomeLoja = this.formatarNomeLoja(nomeLoja);
 
-    this.qtdTotalPecasVendidas += qtdPecasVendidas;
-    this.qtdTotalVendas += qtdVendas;
-    this.valorTotalMovimentado += valorMovimentado;
+    this.qtdTotalPecasVendidas += Number(qtdPecasVendidas);
+    this.qtdTotalVendas += Number(qtdVendas);
+    this.valorTotalMovimentado += Number(valorMovimentado);
 
     if (this.lojas.includes(nomeLoja)) {
       let indiceLoja = this.lojas.indexOf(nomeLoja);
